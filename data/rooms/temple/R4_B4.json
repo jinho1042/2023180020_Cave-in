@@ -20,9 +20,7 @@
   "breath_zones": [],
   "breath_gates": [],
   "safe_zones": [],
-  "air_vents": [
-    [1280, 100, "vent_a"]
-  ],
+  "air_vents": [],
   "breakables": [],
   "gates": [
     [2512, 64, 32, 200, "arena", "arena_door"]

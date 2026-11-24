@@ -16,9 +16,7 @@
   "breath_zones": [],
   "breath_gates": [],
   "safe_zones": [],
-  "air_vents": [
-    [700, 100, "vent_a"]
-  ],
+  "air_vents": [],
   "breakables": [
     [1176, 64, 56, 56, "ore_chunk", "chunk_r5_b5"]
   ],

@@ -29,9 +29,7 @@
   "triggers": [
     [240, 80, 40, 400, "arena", "arena_a"]
   ],
-  "air_vents": [
-    [980, 320, "vent_a"]
-  ],
+  "air_vents": [],
   "switches": [],
   "spawns": [
     ["scythe", 960, 80]
