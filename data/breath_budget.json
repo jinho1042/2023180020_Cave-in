@@ -2,3 +2,31 @@
 {"from": "R2_01:safe_a", "to": "R2_01", "gate": null, "breath_lv": 1, "time": 0.2, "used": 0.0, "ratio": 0.0}
 {"from": "R2_01:safe_a", "to": "R2_01:safe_a", "gate": null, "breath_lv": 1, "time": 5.4, "used": 4.4, "ratio": 0.09}
 {"from": "R1_04:safe_b", "to": "R2_01:safe_a", "gate": "choke", "breath_lv": 1, "time": 33.0, "used": 32.0, "ratio": 0.64}
+{"type": "boss", "boss": "borer", "phase": 1, "breath_lv": 5, "time": 74.7, "drain": 74.7, "attacks": 31, "white": 20, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "borer", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 73.5, "attacks": 30, "white": 25, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "borer", "phase": 1, "breath_lv": 5, "time": 76.1, "drain": 76.2, "attacks": 30, "white": 20, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "borer", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 73.5, "attacks": 32, "white": 21, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "moss_warden", "phase": 1, "breath_lv": 5, "time": 74.7, "drain": 74.7, "attacks": 29, "white": 18, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "moss_warden", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 73.5, "attacks": 37, "white": 22, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "moss_warden", "phase": 1, "breath_lv": 5, "time": 76.1, "drain": 76.1, "attacks": 29, "white": 18, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "moss_warden", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 73.5, "attacks": 40, "white": 21, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "moss_warden", "phase": 1, "breath_lv": 5, "time": 76.1, "drain": 76.1, "attacks": 30, "white": 20, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "moss_warden", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 73.5, "attacks": 38, "white": 20, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "archsage", "phase": 1, "breath_lv": 5, "time": 74.4, "drain": 74.4, "attacks": 46, "white": 38, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "archsage", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 73.5, "attacks": 86, "white": 81, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "archsage", "phase": 1, "breath_lv": 5, "time": 74.4, "drain": 74.4, "attacks": 54, "white": 46, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "archsage", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 73.5, "attacks": 63, "white": 58, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "archsage", "phase": 1, "breath_lv": 5, "time": 74.4, "drain": 74.4, "attacks": 60, "white": 54, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "archsage", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 73.5, "attacks": 79, "white": 73, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "colossus", "phase": 1, "breath_lv": 5, "time": 74.4, "drain": 74.4, "attacks": 27, "white": 11, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "colossus", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 73.5, "attacks": 31, "white": 22, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "colossus", "phase": 1, "breath_lv": 5, "time": 74.4, "drain": 74.4, "attacks": 27, "white": 11, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "colossus", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 73.5, "attacks": 27, "white": 16, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "colossus", "phase": 1, "breath_lv": 5, "time": 74.4, "drain": 74.4, "attacks": 26, "white": 14, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "colossus", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 73.5, "attacks": 28, "white": 16, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "scythe", "phase": 1, "breath_lv": 5, "time": 74.4, "drain": 96.7, "attacks": 63, "white": 60, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "scythe", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 95.6, "attacks": 52, "white": 40, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "scythe", "phase": 1, "breath_lv": 5, "time": 74.4, "drain": 96.7, "attacks": 55, "white": 49, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "scythe", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 95.6, "attacks": 53, "white": 45, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "scythe", "phase": 1, "breath_lv": 5, "time": 74.4, "drain": 96.7, "attacks": 60, "white": 56, "parries": 0, "won": false, "note": "headless"}
+{"type": "boss", "boss": "scythe", "phase": 2, "breath_lv": 5, "time": 73.5, "drain": 95.6, "attacks": 45, "white": 32, "parries": 0, "won": false, "note": "headless"}

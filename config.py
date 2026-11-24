@@ -115,24 +115,24 @@ SAFE_GROUND_TIME = 2.0     # s, 방에 safe_points가 없을 때 이만큼 연�
 SAFE_POINT_RADIUS = 40     # px, safe_points의 이 거리 안에 서면 '밟은' 것
 COLOR_FADE = (0, 0, 0)
 
-# ===== 숨 (T37, 7.2 · 7.3. # 임시 = T58에서 확정, 그 전에는 바꾸지 않는다. 예외는 0장 14번) =====
+# ===== 숨 (T37, 7.2 · 7.3. T58에서 확정, docs/숨예산.md) =====
 # 숨의 단위는 '초': 소모 배율 1.0에서 1초에 1씩 준다
-BREATH_CAPACITY = [25, 50, 75, 105, 140, 175]  # 임시. 인덱스 = 숨의 룬 레벨 (0 = 룬 없음)
-BREATH_DRAIN = 1.0                              # 임시. 초당 기본 소모
-BREATH_DRAIN_MULT = dict(normal=1.0, spore=2.0, water=3.0, foul=1.3, thin=1.5, void=2.5)  # 임시. void = R6 통로
-BREATH_REFILL_RATE = 40.0  # 임시. 안전지대 안에서 초당 회복
-AIR_VENT_REFILL = 12.0     # 임시. 숨구멍 1회 회복량
+BREATH_CAPACITY = [25, 50, 75, 105, 125, 145]  # 인덱스 = 숨의 룬 레벨 (0 = 룬 없음). T58: Lv4·5는 탐험 어림 + 1.15배 하한 (숨예산 3.3)
+BREATH_DRAIN = 1.0                              # 초당 기본 소모
+BREATH_DRAIN_MULT = dict(normal=1.0, spore=2.0, water=3.0, foul=1.3, thin=1.5, void=2.5)  # void = R6 통로
+BREATH_REFILL_RATE = 40.0  # 안전지대 안에서 초당 회복
+AIR_VENT_REFILL = 12.0     # 숨구멍 1회 회복량
 AIR_VENT_COOLDOWN = 30.0   # 같은 숨구멍 재사용 대기. 방을 나가도 유지 (docs/숨예산.md 4장, 확정)
-CRYSTAL_POCKET_REFILL = 6.0  # 임시. R3 결정 숨주머니를 깼을 때
-BREATH_PER_PARRY = 3.0     # 임시. 각인 '받아친 숨'(parry_breath) 장착 시에만
+CRYSTAL_POCKET_REFILL = 6.0  # R3 결정 숨주머니를 깼을 때
+BREATH_PER_PARRY = 3.0     # 일반 적·정예 패링. 각인 '받아친 숨'(parry_breath) 장착 시에만 (보스는 BOSS_PARRY_BREATH)
 PARRY_BREATH_PER_ENEMY_MAX = 3   # 일반 적 한 마리에게서 패링 숨을 얻는 최대 횟수 (보스·정예는 제한 없음)
 PARRY_BREATH_ENGRAVING_LOCKED = False  # True면 '받아친 숨'을 숨의 룬 1번 홈에서 뺄 수 없음
-BREATH_PER_KILL = 0.0      # 임시. 0이면 처치로는 숨을 얻지 않음
-BREATH_GROGGY_BURST = 15.0 # 임시. 보스 그로기 때 공기 주머니
-HEAL_BREATH_COST = 15.0    # 임시. 숨 고르기 1칸 (완료 시 차감, 그때 모자라면 취소)
+BREATH_PER_KILL = 0.0      # T58: 0으로 확정. 0이면 처치로는 숨을 얻지 않음
+BREATH_GROGGY_BURST = 15.0 # 보스 그로기 때 공기 주머니
+HEAL_BREATH_COST = 15.0    # 숨 고르기 1칸 (완료 시 차감, 그때 모자라면 취소)
 HEAL_TIME = 0.9            # s
-SKILL_BREATH_COST = 8.0    # 임시. 룬 기술 1회
-SUFFOCATE_INTERVAL = 3.0   # 임시. 숨 0일 때 이 간격마다 체력 1칸 (게이트 방 안 제외)
+SKILL_BREATH_COST = 8.0    # 룬 기술 1회
+SUFFOCATE_INTERVAL = 3.0   # 숨 0일 때 이 간격마다 체력 1칸 (게이트 방 안 제외)
 BREATH_GATE_BLACKOUT_FADE = 1.0  # s, 게이트 기절 페이드
 BREATH_GATE_LOCKED_TIME = 1.5    # s, 요구 레벨 미달로 게이트 방에 들어가면 이 시간 동안 숨이 0까지 떨어진 뒤 기절
 BREATH_LOW_RATIO = 0.25    # 이 비율 아래면 경고 연출
@@ -140,7 +140,7 @@ BREATH_EXIT_GRACE = 1.0    # s, 안전지대를 나선 직후 소모 시작까�
 BREATH_REF_LEVEL = dict(corridor=1, moss=2, crystal=3, temple=4, nest=5, tomb=5)   # 구역 기준 숨 Lv (docs/숨예산.md 2.1)
 BREATH_EXPLORE_RATIO = (0.45, 0.55)   # 기준 Lv 숨 하나로 다니는 탐험 대상 방 화면 비율 (숨예산 3장)
 BREATH_LEVEL_MIN_STEP = 1.15          # 용량은 앞 레벨의 이 배 이상 (숨예산 3.3)
-BREATH_USE_TARGET = dict(  # 임시. 플레이테스트 목표 (7.6): 처음 하는 플레이어가 쓴 숨 ÷ 그 시점 기본 용량
+BREATH_USE_TARGET = dict(  # 플레이테스트 목표 (7.6): 처음 하는 플레이어가 쓴 숨 ÷ 그 시점 기본 용량
     gate=(0.6, 0.85),      # 게이트 통로 (요구 레벨로 지날 때). 이 범위면 '빠듯하지만 통과'
     segment=0.8,           # 일반 구간 (안전지대·숨구멍 사이) 상한
 )
@@ -381,7 +381,7 @@ LOCKDOWN = dict(            # 잠금 전투방 (T66, docs/맵디테일.md 9). �
     shake=(8, 0.3),        # 문이 닫힐 때 흔들림 (세기 px, 시간 s)
     marker_w=24, marker_h=10,   # 예고 그림자 반폭·높이 (px)
 )
-R1_SEGMENT_MAX = 15.0      # 임시. s, 숨의 룬 전 R1에서 숨 회복 지점 사이 최단 이동 시간 상한 (용량 25 기준)
+R1_SEGMENT_MAX = 15.0      # s, 숨의 룬 전 R1에서 숨 회복 지점 사이 최단 이동 시간 상한 (용량 25 기준)
 COLLECTIBLE_COUNTS = dict(  # 임시. 12.7 구역별 수집품 수 (상점·NPC·보스 몫 제외). validate_rooms.py 개수 검사 기준
     full=dict(rare_ore=dict(corridor=3, moss=3, crystal=3, temple=3, nest=3, tomb=1),
               engraving=dict(corridor=1, moss=5, crystal=3, temple=3, nest=2, tomb=0),
@@ -842,8 +842,9 @@ BOSS_FIGHT_TARGET = dict(  # 임시. 보스전 예상 시간(초). BOSS_PARRY_BR
 BOSS_REGION_N = dict(borer=1, moss_warden=2, archsage=3, colossus=4, scythe=5, first_miner=5, king=6)  # 패링 비율 n/8의 n
 BOSS_PARRY_SHARE_DIV = 8
 BOSS_PARRY_MARGIN = 0.15              # 흰 공격 비율 여유 (숨예산 5.5)
-BOSS_PARRY_BREATH = dict(             # 임시. 패턴 표 어림(a ≈ 0.8회/초, d = 아레나 배율). T58 측정값으로 확정 (숨예산 5.6)
-    borer=10.0, moss_warden=5.0, archsage=3.3, colossus=3.3, scythe=2.6, first_miner=2.6, king=2.5,
+BOSS_PARRY_BREATH = dict(             # T58: B1~B5는 헤드리스 측정(페이즈별 a·d, 가장 큰 값)으로 확정 (18장 187번)
+    borer=19.8, moss_warden=10.3, archsage=3.7, colossus=9.3, scythe=3.1,
+    first_miner=2.6, king=2.5,        # 임시. 패턴 표 어림 — T63·T59에서 같은 방식으로 측정해 확정
 )
 BOSS_RUNE = dict(borer='burrow', moss_warden='brace', archsage='crystal', colossus='breakthrough', scythe='shadow')   # 처치 보상 룬 (11.4 보상)
 BOSS_CORE = dict(archsage='crystal', colossus='temple', scythe='nest')   # 처치 보상 봉인 핵 id (world_state.cores, 11.4 보상)
