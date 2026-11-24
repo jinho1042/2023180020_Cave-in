@@ -131,6 +131,8 @@ def draw_breath_debug():
         text += f"  구간 {seg['time']:.1f}s 쓴 숨 {seg['used']:.1f}"
     if breath.infinite:
         text += '  [F5 무한]'
+    if breath.no_refill:
+        text += '  NO REFILL'
     font.draw(config.HUD_MARGIN, y, text, config.COLOR_TEXT_DIM)
 
 

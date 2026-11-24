@@ -154,6 +154,8 @@ def fire_arrow(x, y, direction, player, platforms):
 
 def fire(x, y, dir_x, dir_y, speed, damage, parryable, platforms, spec, owner=None):
     p = Projectile(x, y, dir_x, dir_y, speed, damage, parryable, platforms, spec, owner)
+    if getattr(owner, 'is_boss', False):
+        owner.count_projectile(parryable)   # 숨 예산 측정: 보스 공격 횟수 (docs/숨예산.md 5.3)
     sound.play('shoot')
     game_world.add_object(p, config.DEPTH_ENEMY)
     # 반사 후 그룹을 옮기면 충돌 순회 중 목록이 바뀌므로 처음부터 양쪽에 등록하고 reflected로 거른다

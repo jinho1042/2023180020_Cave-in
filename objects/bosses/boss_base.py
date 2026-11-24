@@ -4,7 +4,7 @@ import config
 import game_framework
 import game_world
 from objects import effect, magic_circle, pickup, projectile
-from objects.enemy_base import CHASE, DEAD, STAGGER, EnemyBase
+from objects.enemy_base import ACTIVE, CHASE, DEAD, STAGGER, WINDUP, EnemyBase
 from systems import camera, sound
 
 # 보스 공통 구조 (11.2)
@@ -25,6 +25,13 @@ def boss_damage(stats, parryable):
     return stats['damage'] if parryable else stats['heavy_damage']
 
 
+def note_parry(source):
+    # 플레이어가 보스 몸·보스 투사체를 패링(반사 포함)함 → 숨 예산 측정의 parries (docs/숨예산.md 8.1)
+    owner = source.owner if isinstance(source, projectile.Projectile) else source
+    if getattr(owner, 'is_boss', False) and owner.kind == 'boss':
+        owner.meter()['parries'] += 1
+
+
 def clear_hostile_projectiles():
     # 화면의 적 투사체·마법진 제거 (페이즈 전환·처치, 11.2). 반사탄은 남긴다
     for layer in game_world.world:
@@ -39,6 +46,7 @@ class BossBase(EnemyBase):
     is_boss = True
     kind = 'boss'
     boss_key = None   # config.BOSS_NAME 키 = 방 JSON boss 값 (bosses_met·bosses_defeated에 남는다)
+    PROJECTILE_ATTACKS = ()   # 흰 투사체 패턴: 공격 횟수를 패턴이 아니라 쏜 투사체마다 센다 (docs/숨예산.md 5.3)
 
     def __init__(self, x, y, stats, player, platforms):
         # 공격 사거리는 패턴마다 다르므로 attack_range는 쓰지 않는다. 패턴 사이 대기는 BOSS_IDLE_GAP
@@ -55,6 +63,10 @@ class BossBase(EnemyBase):
         self.rise_timer = 0.0  # 그로기에서 일어난 뒤 무적
         self.intro_time = 0.0
         self.first_meet = False
+        # 숨 예산 측정 (docs/숨예산.md 8.1): 페이즈 → dict(time, drain, attacks, white, parries)
+        self.meters = {}
+        self.meter_void = False   # F5 숨 무한을 쓴 판은 기록하지 않는다
+        self.drain_mark = None    # breath.drained_total을 마지막으로 읽은 값
         self.set_state(DORMANT)
 
     # ---------- 등장 ----------
@@ -91,6 +103,7 @@ class BossBase(EnemyBase):
         self.rise_timer = max(0, self.rise_timer - dt)
         for name in self.cooldowns:
             self.cooldowns[name] = max(0, self.cooldowns[name] - dt)
+        self.update_meter(dt)
         super().update()
 
     def idle_gap(self):
@@ -119,8 +132,63 @@ class BossBase(EnemyBase):
         else:
             prev = self.state
             super().next_phase()
+            if prev == WINDUP and self.state == ACTIVE:
+                self.count_attack(self.attack)
             if self.state == CHASE and prev != CHASE:
                 self.attack_cooldown = self.idle_gap()   # 패턴 사이 BOSS_IDLE_GAP (11.2)
+
+    # ---------- 숨 예산 측정 (docs/숨예산.md 5.3, 8.1) ----------
+
+    def meter(self):
+        return self.meters.setdefault(self.phase, dict(time=0.0, drain=0.0, attacks=0, white=0, parries=0))
+
+    def fighting(self):
+        # 전투 시간 = 등장 연출·페이즈 전환·그로기·처치 연출을 뺀 시간
+        return self.state not in NO_FIGHT and self.state not in (GROGGY, DEAD)
+
+    def update_meter(self, dt):
+        from systems import breath   # 순환 import 방지
+        if breath.infinite:
+            self.meter_void = True
+        mark, self.drain_mark = self.drain_mark, breath.drained_total
+        if not self.fighting():
+            return
+        m = self.meter()
+        m['time'] += dt
+        if mark is not None:
+            m['drain'] += breath.drained_total - mark
+
+    def count_attack(self, attack):
+        # 공격 1회 (5.3): 빨강 = 패턴 판정 하나에 1, 흰 = 판정마다 1. 흰 투사체 패턴은 투사체마다 (count_projectile)
+        # 피해 0(소환)·페이크(Active에 들어가지 않음)는 세지 않는다
+        if attack is None or attack.damage <= 0:
+            return
+        if attack.parryable and attack.name in self.PROJECTILE_ATTACKS:
+            return
+        m = self.meter()
+        m['attacks'] += 1
+        if attack.parryable:
+            m['white'] += 1
+
+    def count_projectile(self, parryable):
+        # projectile.fire가 보스 소유 투사체를 만들 때. 흰 투사체만 하나씩 센다 (빨강은 패턴에서 1회)
+        if parryable and self.attack is not None and self.attack.name in self.PROJECTILE_ATTACKS:
+            m = self.meter()
+            m['attacks'] += 1
+            m['white'] += 1
+
+    def write_breath_log(self, won):
+        # 보스전이 끝남 (처치·사망): 페이즈마다 한 줄 (8.1). F5를 쓴 판·싸우지 않은 판은 남기지 않는다
+        if self.meter_void or not self.meters:
+            return
+        from systems import breath
+        for phase, m in sorted(self.meters.items()):
+            if m['time'] <= 0:
+                continue
+            breath.append_record(dict(type='boss', boss=self.boss_key, phase=phase, breath_lv=breath.breath_lv(),
+                                      time=round(m['time'], 1), drain=round(m['drain'], 1), attacks=m['attacks'],
+                                      white=m['white'], parries=m['parries'], won=won))
+        self.meters = {}
 
     # ---------- 패턴 선택 ----------
 
@@ -237,6 +305,8 @@ class BossBase(EnemyBase):
         for s in self.alive_summons():
             s.die()
         effect.boss_dying()
+        if self.kind == 'boss':
+            self.write_breath_log(True)
         print(f'[보스] {self.boss_key} 처치')
 
     def fall(self):

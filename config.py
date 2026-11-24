@@ -23,7 +23,8 @@ KEYS = dict(
     breakthrough='SDLK_d', map='SDLK_TAB', inventory='SDLK_i', pause='SDLK_ESCAPE',
 )
 DEBUG_KEYS = dict(hitbox='SDLK_F1', unlock_all='SDLK_F3', warp='SDLK_F4',
-                  infinite_breath='SDLK_F5', record_breath='SDLK_F6', give='SDLK_F7')   # F6, F7
+                  infinite_breath='SDLK_F5', record_breath='SDLK_F6', give='SDLK_F7',
+                  no_refill='SDLK_F8')   # F8 회복 끄기 = 한 숨 탐험 측정 (docs/숨예산.md 8.2)
 RUNE_HOLD_THRESHOLD = 0.25 # s, A를 이보다 오래 누르면 룬 기술 대신 숨 고르기
 
 # ===== 물리 · 이동 (T29) =====
