@@ -594,6 +594,8 @@ class Player:
         self.parry_cooldown = 0
         self.parry_count += 1
         breath.add(engravings.parry_breath_gain(target))   # 패링 숨은 여기서 한 번만 (8.4)
+        from objects.bosses import boss_base   # 순환 import 방지
+        boss_base.note_parry(target)            # 숨 예산 측정 (docs/숨예산.md 8.1)
         engravings.on_parry_success(self, target)
 
     def update_parry(self, dt):

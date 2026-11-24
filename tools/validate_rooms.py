@@ -247,6 +247,8 @@ def check_bosses(rooms):
             error(room_id, '보스방에 아레나 문(gates의 "arena")이 없음')
         if not any(s[0] == boss for s in data.get('spawns', [])):
             error(room_id, f'spawns에 보스 자리({boss})가 없음')
+        if data.get('air_vents'):
+            error(room_id, '보스방에 숨구멍(air_vents)이 있음 — 보스전 숨 회복은 패링·그로기뿐 (docs/숨예산.md 5.1)')
         before =[n for n in neighbors(room_id, rooms) if not rooms[n].get('boss')]
         if not before:
             warn(room_id, '보스방 앞 방이 아직 없음')

@@ -223,6 +223,9 @@ def parry_breath_gain(source):
         if owner.parry_breath_count >= config.PARRY_BREATH_PER_ENEMY_MAX:
             return 0
         owner.parry_breath_count += 1
+    # 보스는 보스마다 정한 양, 「되받은 숨」 배율 없음 (docs/숨예산.md 5.4)
+    if kind == 'boss':
+        return config.BOSS_PARRY_BREATH.get(owner.boss_key, config.BREATH_PER_PARRY)
     # 4. 「되받은 숨」도 장착이면 배율
     gain = config.BREATH_PER_PARRY
     if is_set('breath_echo'):

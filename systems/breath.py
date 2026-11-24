@@ -29,20 +29,33 @@ flash_timer = 0.0         # 패링 숨을 얻었을 때 게이지 반짝
 segment = None            # 진행 중인 구간 dict(start, time, used, gate). 안전지대 안이면 None
 finished = None           # 마지막으로 끝난 구간 (F6가 기록하면 None)
 clouds = []               # 지금 방의 포자 구름 (objects/spore_cloud.py가 넣고 뺀다). 방에 들어올 때 비운다
+# 숨구멍 쿨다운 (docs/숨예산.md 4장): play_mode가 갱신될 때만 흐르는 시계. 다른 mode가 위에 있으면 멈추고
+# 다른 방에 가 있거나 방 전환 페이드 중에는 흐른다. 표는 저장하지 않는다 (불러오면 모든 숨구멍 준비)
+play_clock = 0.0
+vent_ready_at = {}        # 숨구멍 전역 id(방id:숨구멍id) → 다시 쓸 수 있게 되는 play_clock
+# 숨 예산 측정 (docs/숨예산.md 8장)
+drained_total = 0.0       # 공기 배율로 나간 숨 누계 (숨 고르기·룬 기술 제외). 보스 기록이 차이를 읽는다
+no_refill = False         # F8 회복 끄기: 숨구멍·숨주머니·패링·그로기 숨 0, 안전지대도 채우지 않고 소모 계속
+explore = None            # F8 '한 숨 탐험' 진행 중: dict(region, rooms, time, used, void)
+explore_done = None       # 방금 끝난 탐험 기록 (play_mode가 알림을 띄우고 비운다)
 
 
 def init(state):
     # 새 게임·이어하기: 숨 가득, 기절 복귀 지점은 rest_seat의 안전지대 (13.6)
-    global infinite, finished
+    global infinite, finished, play_clock, no_refill, explore, explore_done
     infinite = False
     finished = None
+    play_clock = 0.0
+    no_refill, explore, explore_done = False, None, None
+    vent_ready_at.clear()
     refill(state)
 
 
 def refill(state):
     # 숨 가득, 기절 복귀 지점은 rest_seat의 안전지대. 사망 부활도 이것을 부른다 (13.2). F5 숨 무한은 그대로 둔다
     global value, in_safe, grace, gate, locked_rate, suffocating, suffocate_timer
-    global last_safe_zone, blackout, blackout_timer, flash_timer, segment
+    global last_safe_zone, blackout, blackout_timer, flash_timer, segment, no_refill, explore
+    no_refill, explore = False, None   # 사망 부활이면 F8 한 숨 탐험은 무효
     value = capacity()
     in_safe, grace, gate, locked_rate = False, 0.0, None, None
     suffocating, suffocate_timer = False, 0.0
@@ -51,9 +64,13 @@ def refill(state):
     segment = None
 
 
+def breath_lv():
+    return runes.rune_lv(world.state, 'breath')
+
+
 def base_capacity():
     # 숨의 룬 레벨의 기본 용량 (7.6 비율 계산은 각인 보정 없이 이것으로)
-    return config.BREATH_CAPACITY[runes.rune_lv(world.state, 'breath')]
+    return config.BREATH_CAPACITY[breath_lv()]
 
 
 def capacity():
@@ -97,7 +114,7 @@ def suffocate_interval():
 def add(amount):
     # 숨구멍·패링 등으로 얻는 숨. 0 이하면 아무것도 안 한다
     global value, flash_timer, suffocating
-    if amount <= 0:
+    if amount <= 0 or no_refill:
         return
     value = min(capacity(), value + amount)
     flash_timer = config.BREATH_FLASH_TIME
@@ -121,6 +138,8 @@ def use(amount):
     value = max(0.0, value - amount)
     if segment is not None:
         segment['used'] += amount
+    if explore is not None:
+        explore['used'] += amount
 
 
 # ---------- 배율 · 영역 ----------
@@ -176,6 +195,8 @@ def update(dt, player, room, safe_zone):
         return
     if player.dead:
         return
+    if no_refill:
+        safe_zone = None   # F8: 안전지대도 숨을 채우지 않고 소모를 멈추지 않는다 (숨예산 3.2)
     cap = capacity()
     value = min(value, cap)
     m, air = drain_multiplier(room, player)
@@ -196,8 +217,14 @@ def update(dt, player, room, safe_zone):
     mult = m
     if infinite:
         value = cap
+        if explore is not None:
+            explore['void'] = True
         return
     drain(dt, m)
+    if explore is not None:
+        track_explore(dt, room, cap)
+        if explore is None:
+            return   # 숨이 0이 되어 기록하고 다시 채웠다
     if value > 0:
         stop_suffocating()
     elif gate:
@@ -207,7 +234,7 @@ def update(dt, player, room, safe_zone):
 
 
 def drain(dt, m):
-    global grace, locked_rate
+    global grace, locked_rate, drained_total
     if gate and runes.rune_lv(world.state, 'breath') < gate.need_lv:
         # 요구 레벨 미달: 들어온 순간의 숨이 BREATH_GATE_LOCKED_TIME에 걸쳐 0이 된다 (7.3)
         if locked_rate is None:
@@ -218,7 +245,9 @@ def drain(dt, m):
     if grace > 0:
         grace = max(0, grace - dt)
         return
-    use(config.BREATH_DRAIN * m * dt)
+    amount = min(value, config.BREATH_DRAIN * m * dt)
+    drained_total += amount
+    use(amount)
 
 
 def update_safe(dt, zone, cap):
@@ -248,6 +277,19 @@ def leave_safe():
 
 def new_segment(start):
     return dict(start=start, time=0.0, used=0.0, gate=None)
+
+
+def tick_clock(dt):
+    global play_clock
+    play_clock += dt
+
+
+def vent_ready(gid):
+    return play_clock >= vent_ready_at.get(gid, 0.0)
+
+
+def use_vent(gid):
+    vent_ready_at[gid] = play_clock + config.AIR_VENT_COOLDOWN
 
 
 def touch_air_vent(vent):
@@ -337,12 +379,68 @@ def blackout_alpha():
     return 0
 
 
-# ---------- 디버그 (F5, F6) ----------
+# ---------- 디버그 (F5, F6, F8) ----------
 
 def toggle_infinite():
     global infinite
     infinite = not infinite
     return infinite
+
+
+def toggle_no_refill(room):
+    # F8 회복 끄기 (숨예산 3.2, 8.2). 켜면 숨을 가득 채우고 '한 숨 탐험'을 시작한다. 이후 저장은 save_debug.json
+    global no_refill, explore, value
+    no_refill = not no_refill
+    explore = None
+    if no_refill:
+        world.state.debug_unlocked = True
+        value = capacity()
+        explore = dict(region=room.region, rooms=[room.id], time=0.0, used=0.0, void=infinite)
+    return no_refill
+
+
+def track_explore(dt, room, cap):
+    # 한 숨 탐험: 다녀간 방을 모으고, 숨이 0이 되면 기록 → 숨을 다시 채우고 F8을 끈다 (질식하지 않는다)
+    global value, no_refill, explore, explore_done
+    explore['time'] += dt
+    if room.id not in explore['rooms']:
+        explore['rooms'].append(room.id)
+    if value > 0:
+        return
+    run, explore, no_refill = explore, None, False
+    value = cap
+    if run['void']:
+        explore_done = dict(type='explore', void=True)
+        return
+    targets = explore_rooms(run['region'])
+    rooms = [r for r in run['rooms'] if r in targets]
+    screens = sum(targets[r] for r in rooms)
+    total = sum(targets.values())
+    explore_done = dict(type='explore', region=run['region'], breath_lv=breath_lv(), rooms=rooms,
+                        screens=screens, screens_total=total, ratio=round(screens / total, 2) if total else 0,
+                        time=round(run['time'], 1), used=round(run['used'], 1))
+    append_record(explore_done)
+
+
+def explore_rooms(region):
+    # 탐험 대상 방 (숨예산 2.2): 그 구역에서 보스 아레나·숨 게이트 방을 뺀 것 → {방 id: 화면 수}
+    rooms = {}
+    for room_id, path in world.room_paths.items():
+        with open(path, encoding='utf-8') as f:
+            data = json.load(f)
+        if data.get('region') != region or data.get('boss') or data.get('breath_gates'):
+            continue
+        w, h = data.get('size', [1, 1])
+        rooms[room_id] = w * h
+    return rooms
+
+
+def append_record(line):
+    # BREATH_BUDGET_PATH에 JSON 한 줄 (13.5, 숨예산 8.1)
+    path = os.path.join(os.path.dirname(__file__), '..', config.BREATH_BUDGET_PATH)
+    with open(path, 'a', encoding='utf-8') as f:
+        f.write(json.dumps(line, ensure_ascii=False) + '\n')
+    print(f'[숨 기록] {line}')
 
 
 def current_segment():
@@ -357,12 +455,10 @@ def record(room_id):
     seg = finished or (dict(segment, to=room_id) if segment else None)
     if seg is None or seg['time'] <= 0:
         return None
-    lv = runes.rune_lv(world.state, 'breath')
-    line = {'from': seg['start'], 'to': seg['to'], 'gate': seg['gate'], 'breath_lv': lv,
+    lv = breath_lv()
+    line = {'type': 'segment', 'from': seg['start'], 'to': seg['to'], 'gate': seg['gate'], 'breath_lv': lv,
             'time': round(seg['time'], 1), 'used': round(seg['used'], 1),
             'ratio': round(seg['used'] / config.BREATH_CAPACITY[lv], 2)}
-    path = os.path.join(os.path.dirname(__file__), '..', config.BREATH_BUDGET_PATH)
-    with open(path, 'a', encoding='utf-8') as f:
-        f.write(json.dumps(line, ensure_ascii=False) + '\n')
+    append_record(line)
     finished = None
     return line

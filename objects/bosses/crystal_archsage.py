@@ -19,6 +19,7 @@ class CrystalArchsage(BossBase):
     # 2페이즈(50%): 결정 갑옷이 깨짐, 연사 5 → 7발, 순간이동 직후 바로 연사
     # 근접 공격이 없으므로 자세는 반사탄(+POSTURE_REFLECT)과 곡괭이·룬 기술 적중으로 쌓인다
     boss_key = 'archsage'
+    PROJECTILE_ATTACKS = ('volley', 'orb')
 
     def __init__(self, x, y, player, platforms):
         super().__init__(x, y, STATS, player, platforms)

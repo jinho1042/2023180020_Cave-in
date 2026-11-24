@@ -156,6 +156,10 @@ def handle_events():
             line = breath.record(room.id)
             hud.show_message('숨 구간 기록' if line else '기록할 구간 없음')
             print(f'[DEBUG] F6 숨 구간 기록: {line}')
+        elif config.DEBUG and e.type == SDL_KEYDOWN and DEBUG_KEY.get(e.key) == 'no_refill':
+            on = breath.toggle_no_refill(room)
+            hud.show_message(f"회복 끄기 {'켬 — 한 숨 탐험 시작' if on else '끔'}")
+            print(f"[DEBUG] F8 회복 끄기 {'켬' if on else '끔'} ({room.region})")
         elif config.DEBUG and e.type == SDL_KEYDOWN and DEBUG_KEY.get(e.key) in ('warp', 'give'):
             # F4 방 이동 메뉴 · F7 개별 지급 메뉴. 방 전환 중에는 열지 않는다
             if world.phase is None:
@@ -170,6 +174,7 @@ def handle_events():
 def update():
     global enemies, play_time, death_timer
     dt = game_framework.frame_time
+    breath.tick_clock(dt)   # 숨구멍 쿨다운 시계 (docs/숨예산.md 4.2)
     world.update(dt)
     script.update(dt)
     hud.update(dt)
@@ -207,6 +212,10 @@ def update():
     if world.phase is None and not player.cutscene:
         # 숨은 방 전환 페이드·컷신 중에는 멈춘다 (7.2). 슬로모션이면 월드와 같은 속도로
         breath.update(dt * hitstop.time_scale(), player, room, zone)
+        if breath.explore_done:
+            done, breath.explore_done = breath.explore_done, None
+            hud.show_message('F5를 써서 탐험 기록 안 함' if done.get('void')
+                             else f"한 숨 탐험 기록: 화면 {done['screens']}/{done['screens_total']} ({done['ratio']:.0%})")
     check_exits()
 
 
@@ -395,6 +404,8 @@ def start_respawn():
     global respawning, ore_lost
     respawning = True
     ore_lost = economy.lose_on_death()
+    if boss and boss.is_alive() and boss.kind == 'boss':
+        boss.write_breath_log(False)   # 보스전 숨 예산 기록 (docs/숨예산.md 8.1)
     world.state.stats['deaths'] += 1
     seat = world.state.rest_seat
     print(f'[사망] 소지 광석 {ore_lost} 잃음 → {seat or config.START_ROOM}')

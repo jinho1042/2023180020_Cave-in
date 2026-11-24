@@ -199,6 +199,7 @@ class RockshellBorer(BossBase):
 
     def drop_rocks(self):
         # 천장 박치기 순간: rock_count개. 플레이어 발밑과 숨구멍 위에 하나씩, 나머지는 아레나에 고르게
+        # (T58부터 아레나에 숨구멍이 없으므로 vents는 비어 플레이어 발밑 하나만 겨냥한다, docs/숨예산.md 5.1)
         spec = STATS['rockfall']
         count = STATS['rock_count'][min(self.phase, len(STATS['rock_count'])) - 1]
         l, r = self.span[0] + spec['margin'], self.span[1] - spec['margin']

@@ -8,25 +8,24 @@ from systems import camera
 class AirVent:
     # 숨구멍 (7.2): 벽 틈에서 바람이 새는 곳. 몸이 닿으면 AIR_VENT_REFILL, AIR_VENT_COOLDOWN 뒤 재사용
     # 방 JSON air_vents [x, y, id], (x, y)는 중심. 닿기 처리는 play_mode.check_air_vents
-    # 쿨다운은 저장하지 않는다 (방에 다시 들어오면 새로 생긴다)
+    # 쿨다운은 breath.vent_ready_at[gid] 표에 있다: 방을 나갔다 와도 유지, 저장은 안 함 (docs/숨예산.md 4장)
     # 이끼 동굴(moss) 숨구멍은 이끼가 공기를 내는 곳이라 둘레에 이끼 덩이를 그린다 (2.3, 12.2)
     def __init__(self, room_id, x, y, vent_id, region=None):
         self.x, self.y = x, y
         self.gid = f'{room_id}:{vent_id}'
         self.moss = region == 'moss'
-        self.cooldown = 0.0
         self.time = 0.0       # 공기 점 애니메이션
 
     def ready(self):
-        return self.cooldown <= 0
+        from systems import breath   # 순환 import 방지 (world → room → air_vent → breath → world)
+        return breath.vent_ready(self.gid)
 
     def use(self):
-        self.cooldown = config.AIR_VENT_COOLDOWN
+        from systems import breath
+        breath.use_vent(self.gid)
 
     def update(self):
-        dt = game_framework.frame_time
-        self.cooldown = max(0, self.cooldown - dt)
-        self.time += dt
+        self.time += game_framework.frame_time
 
     def draw(self):
         if not camera.visible(self.get_bb()):

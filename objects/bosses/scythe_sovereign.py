@@ -19,6 +19,7 @@ class ScytheSovereign(BossBase):
     # 1~: 4연속 베기(흰, 리듬 연속 패링) · 순간이동 기습(빨강, 2칸) · 낫날 투척(흰, 반사)
     # 2페이즈(50%): 속도 × phase2_speed_mult, 빨강 비율 증가, 그림자 낫 소용돌이(빨강) 추가, 페이크(원칙 14)
     boss_key = 'scythe'
+    PROJECTILE_ATTACKS = ('throw',)
 
     def __init__(self, x, y, player, platforms):
         super().__init__(x, y, STATS, player, platforms)

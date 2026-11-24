@@ -29,9 +29,7 @@
   "triggers": [
     [1000, 80, 40, 400, "arena", "arena_a"]
   ],
-  "air_vents": [
-    [300, 320, "vent_a"]
-  ],
+  "air_vents": [],
   "switches": [],
   "spawns": [
     ["archsage", 320, 80]
