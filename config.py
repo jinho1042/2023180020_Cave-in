@@ -136,6 +136,9 @@ BREATH_GATE_BLACKOUT_FADE = 1.0  # s, 게이트 기절 페이드
 BREATH_GATE_LOCKED_TIME = 1.5    # s, 요구 레벨 미달로 게이트 방에 들어가면 이 시간 동안 숨이 0까지 떨어진 뒤 기절
 BREATH_LOW_RATIO = 0.25    # 이 비율 아래면 경고 연출
 BREATH_EXIT_GRACE = 1.0    # s, 안전지대를 나선 직후 소모 시작까지 유예
+BREATH_REF_LEVEL = dict(corridor=1, moss=2, crystal=3, temple=4, nest=5, tomb=5)   # 구역 기준 숨 Lv (docs/숨예산.md 2.1)
+BREATH_EXPLORE_RATIO = (0.45, 0.55)   # 기준 Lv 숨 하나로 다니는 탐험 대상 방 화면 비율 (숨예산 3장)
+BREATH_LEVEL_MIN_STEP = 1.15          # 용량은 앞 레벨의 이 배 이상 (숨예산 3.3)
 BREATH_USE_TARGET = dict(  # 임시. 플레이테스트 목표 (7.6): 처음 하는 플레이어가 쓴 숨 ÷ 그 시점 기본 용량
     gate=(0.6, 0.85),      # 게이트 통로 (요구 레벨로 지날 때). 이 범위면 '빠듯하지만 통과'
     segment=0.8,           # 일반 구간 (안전지대·숨구멍 사이) 상한
@@ -830,8 +833,16 @@ BOSS_BORER = dict(hp=200, damage=1, phase_hp=[0.5], p2_speed_mult=1.2,
 COLOR_BORER_SHELL = (150, 135, 115)    # 등껍질 마디
 COLOR_BORER_BELLY = (200, 150, 120)    # 그로기·2페이즈에 드러나는 몸통
 COLOR_BORER_CRACK = (90, 70, 55)       # 잠행 균열
-BOSS_FIGHT_TARGET = dict(  # 임시. 보스전 예상 시간(초). 아레나 숨구멍 수를 정할 때 참고 (7.6 목표 3)
+BOSS_FIGHT_TARGET = dict(  # 임시. 보스전 예상 시간(초). BOSS_PARRY_BREATH 초기값 어림에 참고 (숨예산 5.6)
     borer=50, moss_warden=80, archsage=90, colossus=100, scythe=110, king=180, first_miner=90,
+)
+# 보스 패링 숨 (docs/숨예산.md 5장): 「받아친 숨」 장착 시 보스(몸·투사체) 패링 1회당 숨. 「되받은 숨」 배율 없음
+# 보스 Bn의 공격 n/8을 패링하면 숨이 유지되게: 8 × d ÷ (n × a). a = 공격/초, d = 소모/초 (tools/breath_budget.py가 계산)
+BOSS_REGION_N = dict(borer=1, moss_warden=2, archsage=3, colossus=4, scythe=5, first_miner=5, king=6)  # 패링 비율 n/8의 n
+BOSS_PARRY_SHARE_DIV = 8
+BOSS_PARRY_MARGIN = 0.15              # 흰 공격 비율 여유 (숨예산 5.5)
+BOSS_PARRY_BREATH = dict(             # 임시. 패턴 표 어림(a ≈ 0.8회/초, d = 아레나 배율). T58 측정값으로 확정 (숨예산 5.6)
+    borer=10.0, moss_warden=5.0, archsage=3.3, colossus=3.3, scythe=2.6, first_miner=2.6, king=2.5,
 )
 BOSS_RUNE = dict(borer='burrow', moss_warden='brace', archsage='crystal', colossus='breakthrough', scythe='shadow')   # 처치 보상 룬 (11.4 보상)
 BOSS_CORE = dict(archsage='crystal', colossus='temple', scythe='nest')   # 처치 보상 봉인 핵 id (world_state.cores, 11.4 보상)
