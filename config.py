@@ -121,7 +121,7 @@ BREATH_DRAIN = 1.0                              # 임시. 초당 기본 소모
 BREATH_DRAIN_MULT = dict(normal=1.0, spore=2.0, water=3.0, foul=1.3, thin=1.5, void=2.5)  # 임시. void = R6 통로
 BREATH_REFILL_RATE = 40.0  # 임시. 안전지대 안에서 초당 회복
 AIR_VENT_REFILL = 12.0     # 임시. 숨구멍 1회 회복량
-AIR_VENT_COOLDOWN = 20.0   # 임시. 같은 숨구멍 재사용 대기
+AIR_VENT_COOLDOWN = 30.0   # 같은 숨구멍 재사용 대기. 방을 나가도 유지 (docs/숨예산.md 4장, 확정)
 CRYSTAL_POCKET_REFILL = 6.0  # 임시. R3 결정 숨주머니를 깼을 때
 BREATH_PER_PARRY = 3.0     # 임시. 각인 '받아친 숨'(parry_breath) 장착 시에만
 PARRY_BREATH_PER_ENEMY_MAX = 3   # 일반 적 한 마리에게서 패링 숨을 얻는 최대 횟수 (보스·정예는 제한 없음)

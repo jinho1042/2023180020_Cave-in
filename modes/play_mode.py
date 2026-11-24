@@ -170,6 +170,7 @@ def handle_events():
 def update():
     global enemies, play_time, death_timer
     dt = game_framework.frame_time
+    breath.tick_clock(dt)   # 숨구멍 쿨다운 시계 (docs/숨예산.md 4.2)
     world.update(dt)
     script.update(dt)
     hud.update(dt)

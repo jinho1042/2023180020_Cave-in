@@ -29,13 +29,19 @@ flash_timer = 0.0         # 패링 숨을 얻었을 때 게이지 반짝
 segment = None            # 진행 중인 구간 dict(start, time, used, gate). 안전지대 안이면 None
 finished = None           # 마지막으로 끝난 구간 (F6가 기록하면 None)
 clouds = []               # 지금 방의 포자 구름 (objects/spore_cloud.py가 넣고 뺀다). 방에 들어올 때 비운다
+# 숨구멍 쿨다운 (docs/숨예산.md 4장): play_mode가 갱신될 때만 흐르는 시계. 다른 mode가 위에 있으면 멈추고
+# 다른 방에 가 있거나 방 전환 페이드 중에는 흐른다. 표는 저장하지 않는다 (불러오면 모든 숨구멍 준비)
+play_clock = 0.0
+vent_ready_at = {}        # 숨구멍 전역 id(방id:숨구멍id) → 다시 쓸 수 있게 되는 play_clock
 
 
 def init(state):
     # 새 게임·이어하기: 숨 가득, 기절 복귀 지점은 rest_seat의 안전지대 (13.6)
-    global infinite, finished
+    global infinite, finished, play_clock
     infinite = False
     finished = None
+    play_clock = 0.0
+    vent_ready_at.clear()
     refill(state)
 
 
@@ -248,6 +254,19 @@ def leave_safe():
 
 def new_segment(start):
     return dict(start=start, time=0.0, used=0.0, gate=None)
+
+
+def tick_clock(dt):
+    global play_clock
+    play_clock += dt
+
+
+def vent_ready(gid):
+    return play_clock >= vent_ready_at.get(gid, 0.0)
+
+
+def use_vent(gid):
+    vent_ready_at[gid] = play_clock + config.AIR_VENT_COOLDOWN
 
 
 def touch_air_vent(vent):
